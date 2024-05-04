@@ -37,5 +37,19 @@ namespace LibraryApp.Repository
         {
             return _context.Collections.Where(c  => c.Id == id).FirstOrDefault();
         }
+
+        public bool CreateCollection(Collection collection)
+        {
+            _context.Add(collection);
+
+            return Save();
+        }
+
+        public bool Save()
+        {
+            var saved = _context.SaveChanges();
+
+            return saved > 0;
+        }
     }
 }

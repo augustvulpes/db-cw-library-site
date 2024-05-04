@@ -8,7 +8,9 @@ namespace LibraryApp.Interfaces
         ICollection<Book> GetBooks(string title);
         Book GetBook(int id);
         bool BookExists(int id);
-        bool CreateBook(Book book);
+        bool CreateBook(int authorId, Book book);
+        bool AddOwnership(int authorId, int bookId);
+        bool AddIntoCollection(int collectionId, int bookId);
         bool Save();
     }
 }

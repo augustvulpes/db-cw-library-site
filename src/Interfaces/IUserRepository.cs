@@ -9,5 +9,7 @@ namespace LibraryApp.Interfaces
         bool UserExists(int id);
         ICollection<Review> GetReviewsByUser(int id);
         ICollection<Order> GetOrdersByUser(int id);
+        bool CreateUser(User user);
+        bool Save();
     }
 }

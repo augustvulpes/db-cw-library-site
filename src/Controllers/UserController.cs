@@ -2,6 +2,7 @@
 using LibraryApp.Dto;
 using LibraryApp.Interfaces;
 using LibraryApp.Models;
+using LibraryApp.Repository;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryApp.Controllers
@@ -78,6 +79,38 @@ namespace LibraryApp.Controllers
             }
 
             return Ok(orders);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateUser([FromBody] UserDto userCreate)
+        {
+            if (userCreate == null)
+                return BadRequest(ModelState);
+
+            var user = _userRepository.GetUsers()
+                .Where(u => u.Email.Trim().ToUpper() == userCreate.Email.TrimEnd().ToUpper())
+                .FirstOrDefault();
+
+            if (user != null)
+            {
+                ModelState.AddModelError("", "user already exists");
+                return StatusCode(422, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userMap = _mapper.Map<User>(userCreate);
+
+            if (!_userRepository.CreateUser(userMap))
+            {
+                ModelState.AddModelError("", "Something went wrog while saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Successfully created");
         }
     }
 }

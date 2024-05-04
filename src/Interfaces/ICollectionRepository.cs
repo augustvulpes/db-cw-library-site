@@ -9,5 +9,7 @@ namespace LibraryApp.Interfaces
         ICollection<Book> GetBooksByCollection(int collectionId);
         ICollection<Collection> GetCollectionByBook(int id);
         bool CollectionExists(int id);
+        bool CreateCollection(Collection collection);
+        bool Save();
     }
 }

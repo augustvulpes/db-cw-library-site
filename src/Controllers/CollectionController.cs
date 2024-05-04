@@ -2,6 +2,7 @@
 using LibraryApp.Dto;
 using LibraryApp.Interfaces;
 using LibraryApp.Models;
+using LibraryApp.Repository;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -65,6 +66,38 @@ namespace LibraryApp.Controllers
             }
 
             return Ok(books);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateCollection([FromBody] CollectionDto collectionCreate)
+        {
+            if (collectionCreate == null)
+                return BadRequest(ModelState);
+
+            var collection = _collectionRepository.GetCollections()
+                .Where(a => a.Title.Trim().ToUpper() == collectionCreate.Title.TrimEnd().ToUpper())
+                .FirstOrDefault();
+
+            if (collection != null)
+            {
+                ModelState.AddModelError("", "collection already exists");
+                return StatusCode(422, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var collectionMap = _mapper.Map<Collection>(collectionCreate);
+
+            if (!_collectionRepository.CreateCollection(collectionMap))
+            {
+                ModelState.AddModelError("", "Something went wrog while saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Successfully created");
         }
     }
 }
