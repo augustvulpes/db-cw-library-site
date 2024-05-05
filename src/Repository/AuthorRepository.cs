@@ -45,5 +45,19 @@ namespace LibraryApp.Repository
 
             return saved > 0;
         }
+
+        public bool UpdateAuthor(Author author)
+        {
+            _context.Update(author);
+
+            return Save();
+        }
+
+        public bool DeleteAuthor(Author author)
+        {
+            _context.Remove(author);
+
+            return Save();
+        }
     }
 }

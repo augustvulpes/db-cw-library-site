@@ -10,6 +10,7 @@ namespace LibraryApp.Interfaces
         ICollection<Collection> GetCollectionByBook(int id);
         bool CollectionExists(int id);
         bool CreateCollection(Collection collection);
+        bool UpdateCollection(Collection collection);
         bool Save();
     }
 }

@@ -2,6 +2,7 @@
 using LibraryApp.Dto;
 using LibraryApp.Interfaces;
 using LibraryApp.Models;
+using LibraryApp.Repository;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryApp.Controllers
@@ -81,6 +82,32 @@ namespace LibraryApp.Controllers
             }
 
             return Ok("Successfully created");
+        }
+
+        [HttpPut("{newsId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateNews(int newsId, [FromBody] NewsDto newsUpdate)
+        {
+            if (newsUpdate == null || newsId != newsUpdate.Id)
+                return BadRequest(ModelState);
+
+            if (!_newsRepository.NewsExists(newsId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var newsMap = _mapper.Map<News>(newsUpdate);
+
+            if (!_newsRepository.UpdateNews(newsMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
         }
     }
 }

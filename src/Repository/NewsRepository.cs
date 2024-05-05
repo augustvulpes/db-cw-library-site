@@ -39,5 +39,12 @@ namespace LibraryApp.Repository
 
             return saved > 0;
         }
+
+        public bool UpdateNews(News news)
+        {
+            _context.Update(news);
+
+            return Save();
+        }
     }
 }

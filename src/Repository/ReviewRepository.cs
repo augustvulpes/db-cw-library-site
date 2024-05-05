@@ -34,5 +34,12 @@ namespace LibraryApp.Repository
 
             return saved > 0;
         }
+
+        public bool UpdateReview(Review review)
+        {
+            _context.Update(review);
+
+            return Save();
+        }
     }
 }

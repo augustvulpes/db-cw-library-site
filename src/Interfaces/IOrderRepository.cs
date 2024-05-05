@@ -9,6 +9,7 @@ namespace LibraryApp.Interfaces
         Order GetOrder(int id);
         bool OrderExists(int id);
         bool CreateOrder(Order order);
+        bool UpdateOrder(Order order);
         bool Save();
     }
 }

@@ -108,5 +108,31 @@ namespace LibraryApp.Controllers
 
             return Ok("Successfully created");
         }
+
+        [HttpPut("{orderId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateOrder(int orderId, [FromBody] OrderDto orderUpdate)
+        {
+            if (orderUpdate == null || orderId != orderUpdate.Id)
+                return BadRequest(ModelState);
+
+            if (!_orderRepository.OrderExists(orderId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var orderMap = _mapper.Map<Order>(orderUpdate);
+
+            if (!_orderRepository.UpdateOrder(orderMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }

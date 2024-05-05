@@ -112,5 +112,31 @@ namespace LibraryApp.Controllers
 
             return Ok("Successfully created");
         }
+
+        [HttpPut("{userId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateUser(int userId, [FromBody] UserDto userUpdate)
+        {
+            if (userUpdate == null || userId != userUpdate.Id)
+                return BadRequest(ModelState);
+
+            if (!_userRepository.UserExists(userId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userMap = _mapper.Map<User>(userUpdate);
+
+            if (!_userRepository.UpdateUser(userMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }

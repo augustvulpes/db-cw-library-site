@@ -51,5 +51,12 @@ namespace LibraryApp.Repository
 
             return saved > 0;
         }
+
+        public bool UpdateUser(User user)
+        {
+            _context.Update(user);
+
+            return Save();
+        }
     }
 }

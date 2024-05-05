@@ -46,5 +46,12 @@ namespace LibraryApp.Repository
 
             return saved > 0;
         }
+
+        public bool UpdateOrder(Order order)
+        {
+            _context.Update(order);
+
+            return Save();
+        }
     }
 }

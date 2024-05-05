@@ -10,6 +10,7 @@ namespace LibraryApp.Interfaces
         ICollection<Review> GetReviewsByUser(int id);
         ICollection<Order> GetOrdersByUser(int id);
         bool CreateUser(User user);
+        bool UpdateUser(User user);
         bool Save();
     }
 }

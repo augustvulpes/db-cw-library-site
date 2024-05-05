@@ -98,6 +98,61 @@ namespace LibraryApp.Controllers
 
             return Ok("Successfully created");
         }
+
+        [HttpPut("{authorId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateAuthor(int authorId, [FromBody] AuthorDto authorUpdate)
+        {
+            if (authorUpdate == null || authorId != authorUpdate.Id)
+                return BadRequest(ModelState);
+
+            if (!_authorRepository.AuthorExists(authorId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var authorMap = _mapper.Map<Author>(authorUpdate);
+
+            if (!_authorRepository.UpdateAuthor(authorMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{authorId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteAuthor(int authorId)
+        {
+            if (!_authorRepository.AuthorExists(authorId))
+                return NotFound();
+
+            var author = _authorRepository.GetAuthor(authorId);
+
+            if (author == null)
+            {
+                ModelState.AddModelError("", "author doesn't exist");
+                return StatusCode(404, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_authorRepository.DeleteAuthor(author))
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }
 

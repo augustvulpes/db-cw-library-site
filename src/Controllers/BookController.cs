@@ -181,5 +181,31 @@ namespace LibraryApp.Controllers
 
             return Ok("Successfully created");
         }
+
+        [HttpPut("{bookId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateBook(int bookId, [FromBody] BookDto bookUpdate)
+        {
+            if (bookUpdate == null || bookId != bookUpdate.Id)
+                return BadRequest(ModelState);
+
+            if (!_bookRepository.BookExists(bookId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var bookMap = _mapper.Map<Book>(bookUpdate);
+
+            if (!_bookRepository.UpdateBook(bookMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }

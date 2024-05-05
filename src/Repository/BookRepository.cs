@@ -86,5 +86,12 @@ namespace LibraryApp.Repository
 
             return saved > 0;
         }
+
+        public bool UpdateBook(Book book)
+        {
+            _context.Update(book);
+
+            return Save();
+        }
     }
 }

@@ -99,5 +99,31 @@ namespace LibraryApp.Controllers
 
             return Ok("Successfully created");
         }
+
+        [HttpPut("{collectionId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateCollection(int collectionId, [FromBody] CollectionDto collectionUpdate)
+        {
+            if (collectionUpdate == null || collectionId != collectionUpdate.Id)
+                return BadRequest(ModelState);
+
+            if (!_collectionRepository.CollectionExists(collectionId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var collectionMap = _mapper.Map<Collection>(collectionUpdate);
+
+            if (!_collectionRepository.UpdateCollection(collectionMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }
