@@ -100,6 +100,9 @@ namespace LibraryApp.Controllers
             orderMap.User = _userRepository.GetUser(orderCreate.UserId);
             orderMap.Book = _bookRepository.GetBook(orderCreate.BookId);
 
+            if (orderMap.User == null || orderMap.Book == null)
+                return StatusCode(404, ModelState);
+
             if (!_orderRepository.CreateOrder(orderMap))
             {
                 ModelState.AddModelError("", "Something went wrog while saving");
@@ -129,6 +132,35 @@ namespace LibraryApp.Controllers
             if (!_orderRepository.UpdateOrder(orderMap))
             {
                 ModelState.AddModelError("", "Something went wrong while updating");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{orderId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteOrder(int orderId)
+        {
+            if (!_orderRepository.OrderExists(orderId))
+                return NotFound();
+
+            var order = _orderRepository.GetOrder(orderId);
+
+            if (order == null)
+            {
+                ModelState.AddModelError("", "order doesn't exist");
+                return StatusCode(404, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_orderRepository.DeleteOrder(order))
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting");
                 return StatusCode(500, ModelState);
             }
 

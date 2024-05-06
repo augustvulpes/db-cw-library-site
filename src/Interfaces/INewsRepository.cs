@@ -9,6 +9,7 @@ namespace LibraryApp.Interfaces
         bool NewsExists(int id);
         bool CreateNews(News news);
         bool UpdateNews(News news);
+        bool DeleteNews(News news);
         bool Save();
     }
 }

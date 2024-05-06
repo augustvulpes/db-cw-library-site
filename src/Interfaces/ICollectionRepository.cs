@@ -11,6 +11,7 @@ namespace LibraryApp.Interfaces
         bool CollectionExists(int id);
         bool CreateCollection(Collection collection);
         bool UpdateCollection(Collection collection);
+        bool DeleteCollection(Collection collection);
         bool Save();
     }
 }

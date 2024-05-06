@@ -125,5 +125,34 @@ namespace LibraryApp.Controllers
 
             return NoContent();
         }
+
+        [HttpDelete("{collectionId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteCollection(int collectionId)
+        {
+            if (!_collectionRepository.CollectionExists(collectionId))
+                return NotFound();
+
+            var collection = _collectionRepository.GetCollection(collectionId);
+
+            if (collection == null)
+            {
+                ModelState.AddModelError("", "collection doesn't exist");
+                return StatusCode(404, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_collectionRepository.DeleteCollection(collection))
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }

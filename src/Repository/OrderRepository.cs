@@ -53,5 +53,12 @@ namespace LibraryApp.Repository
 
             return Save();
         }
+
+        public bool DeleteOrder(Order order)
+        {
+            _context.Remove(order);
+
+            return Save();
+        }
     }
 }

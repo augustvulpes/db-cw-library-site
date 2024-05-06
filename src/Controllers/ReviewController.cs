@@ -28,6 +28,20 @@ namespace LibraryApp.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<Review>))]
+        public IActionResult GetReviews()
+        {
+            var review = _mapper.Map<List<ReviewDto>>(_reviewRepository.GetReviews());
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return Ok(review);
+        }
+
         [HttpGet("{reviewId}")]
         [ProducesResponseType(200, Type = typeof(Review))]
         [ProducesResponseType(400)]
@@ -36,7 +50,7 @@ namespace LibraryApp.Controllers
             if (!_reviewRepository.ReviewExists(reviewId))
                 return NotFound();
 
-            var review =_mapper.Map<ReviewDto>(_reviewRepository.GetReview(reviewId));
+            var review = _mapper.Map<ReviewDto>(_reviewRepository.GetReview(reviewId));
 
             if (!ModelState.IsValid)
             {
@@ -72,6 +86,9 @@ namespace LibraryApp.Controllers
             reviewMap.User = _userRepository.GetUser(reviewCreate.UserId);
             reviewMap.Book = _bookRepository.GetBook(reviewCreate.BookId);
 
+            if (reviewMap.User == null || reviewMap.Book == null)
+                return StatusCode(404, ModelState);
+
             if (!_reviewRepository.CreateReview(reviewMap))
             {
                 ModelState.AddModelError("", "Something went wrog while saving");
@@ -101,6 +118,35 @@ namespace LibraryApp.Controllers
             if (!_reviewRepository.UpdateReview(reviewMap))
             {
                 ModelState.AddModelError("", "Something went wrong while updating");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{reviewId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteReview(int reviewId)
+        {
+            if (!_reviewRepository.ReviewExists(reviewId))
+                return NotFound();
+
+            var review = _reviewRepository.GetReview(reviewId);
+
+            if (review == null)
+            {
+                ModelState.AddModelError("", "review doesn't exist");
+                return StatusCode(404, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_reviewRepository.DeleteReview(review))
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting");
                 return StatusCode(500, ModelState);
             }
 

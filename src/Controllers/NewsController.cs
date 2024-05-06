@@ -109,5 +109,34 @@ namespace LibraryApp.Controllers
 
             return NoContent();
         }
+
+        [HttpDelete("{newsId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteNews(int newsId)
+        {
+            if (!_newsRepository.NewsExists(newsId))
+                return NotFound();
+
+            var news = _newsRepository.GetNewsById(newsId);
+
+            if (news == null)
+            {
+                ModelState.AddModelError("", "news doesn't exist");
+                return StatusCode(404, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_newsRepository.DeleteNews(news))
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }

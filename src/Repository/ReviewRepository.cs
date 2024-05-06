@@ -12,6 +12,12 @@ namespace LibraryApp.Repository
         {
             _context = context;
         }
+
+        public ICollection<Review> GetReviews()
+        {
+            return _context.Reviews.ToList();
+        }
+
         public Review GetReview(int id)
         {
             return _context.Reviews.Where(r => r.Id == id).FirstOrDefault();
@@ -38,6 +44,13 @@ namespace LibraryApp.Repository
         public bool UpdateReview(Review review)
         {
             _context.Update(review);
+
+            return Save();
+        }
+
+        public bool DeleteReview(Review review)
+        {
+            _context.Remove(review);
 
             return Save();
         }

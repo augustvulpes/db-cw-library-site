@@ -46,5 +46,12 @@ namespace LibraryApp.Repository
 
             return Save();
         }
+
+        public bool DeleteNews(News news)
+        {
+            _context.Remove(news);
+
+            return Save();
+        }
     }
 }

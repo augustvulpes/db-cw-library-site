@@ -12,6 +12,7 @@ namespace LibraryApp.Interfaces
         bool AddOwnership(int authorId, int bookId);
         bool AddIntoCollection(int collectionId, int bookId);
         bool UpdateBook(Book book);
+        bool DeleteBook(Book book);
         bool Save();
     }
 }

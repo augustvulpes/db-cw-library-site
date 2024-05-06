@@ -138,5 +138,35 @@ namespace LibraryApp.Controllers
 
             return NoContent();
         }
+
+        [HttpDelete("{userId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteUser(int userId)
+        {
+            if (!_userRepository.UserExists(userId))
+                return NotFound();
+
+            var user = _userRepository.GetUser(userId);
+
+            if (user == null)
+            {
+                ModelState.AddModelError("", "user doesn't exist");
+                return StatusCode(404, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_userRepository.DeleteUser(user))
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+
     }
 }

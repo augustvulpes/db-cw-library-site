@@ -10,6 +10,7 @@ namespace LibraryApp.Interfaces
         bool OrderExists(int id);
         bool CreateOrder(Order order);
         bool UpdateOrder(Order order);
+        bool DeleteOrder(Order order);
         bool Save();
     }
 }

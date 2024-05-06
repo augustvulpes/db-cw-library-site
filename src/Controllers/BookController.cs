@@ -207,5 +207,34 @@ namespace LibraryApp.Controllers
 
             return NoContent();
         }
+
+        [HttpDelete("{bookId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteBook(int bookId)
+        {
+            if (!_bookRepository.BookExists(bookId))
+                return NotFound();
+
+            var book = _bookRepository.GetBook(bookId);
+
+            if (book == null)
+            {
+                ModelState.AddModelError("", "book doesn't exist");
+                return StatusCode(404, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_bookRepository.DeleteBook(book))
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }

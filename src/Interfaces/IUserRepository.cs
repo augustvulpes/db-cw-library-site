@@ -11,6 +11,7 @@ namespace LibraryApp.Interfaces
         ICollection<Order> GetOrdersByUser(int id);
         bool CreateUser(User user);
         bool UpdateUser(User user);
+        bool DeleteUser(User user);
         bool Save();
     }
 }

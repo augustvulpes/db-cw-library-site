@@ -58,5 +58,12 @@ namespace LibraryApp.Repository
 
             return Save();
         }
+
+        public bool DeleteUser(User user)
+        {
+            _context.Remove(user);
+
+            return Save();
+        }
     }
 }

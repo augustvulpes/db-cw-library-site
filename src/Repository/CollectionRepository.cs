@@ -58,5 +58,12 @@ namespace LibraryApp.Repository
 
             return Save();
         }
+
+        public bool DeleteCollection(Collection collection)
+        {
+            _context.Remove(collection);
+
+            return Save();
+        }
     }
 }
