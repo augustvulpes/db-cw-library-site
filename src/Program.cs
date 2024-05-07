@@ -1,6 +1,8 @@
 using LibraryApp.Data;
-using LibraryApp.Interfaces;
+using LibraryApp.Interfaces.RepositoryInterfaces;
+using LibraryApp.Interfaces.ServiceInterfaces;
 using LibraryApp.Repository;
+using LibraryApp.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +19,10 @@ builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
+
+builder.Services.AddScoped<IAuthorService, AuthorService>();
+builder.Services.AddScoped<IBookService, BookService>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<DataContext>(options =>

@@ -1,5 +1,5 @@
 ﻿using LibraryApp.Data;
-using LibraryApp.Interfaces;
+using LibraryApp.Interfaces.RepositoryInterfaces;
 using LibraryApp.Models;
 
 namespace LibraryApp.Repository

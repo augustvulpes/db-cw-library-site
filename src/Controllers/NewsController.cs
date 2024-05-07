@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
 using LibraryApp.Dto;
-using LibraryApp.Interfaces;
+using LibraryApp.Interfaces.RepositoryInterfaces;
 using LibraryApp.Models;
-using LibraryApp.Repository;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryApp.Controllers

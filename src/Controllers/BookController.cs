@@ -1,8 +1,8 @@
-﻿using AutoMapper;
-using LibraryApp.Dto;
-using LibraryApp.Interfaces;
+﻿using LibraryApp.Dto;
+using LibraryApp.Interfaces.ServiceInterfaces;
 using LibraryApp.Models;
-using LibraryApp.Repository;
+using LibraryApp.Services;
+using LibraryApp.Services.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -12,32 +12,21 @@ namespace LibraryApp.Controllers
     [ApiController]
     public class BookController : Controller
     {
-        private readonly IBookRepository _bookRepository;
-        private readonly IAuthorRepository _authorRepository;
-        private readonly ICollectionRepository _collectionRepository;
-        private readonly IMapper _mapper;
+        private readonly IBookService _bookService;
 
-        public BookController(IBookRepository bookRepository, 
-            IAuthorRepository authorRepository,
-            ICollectionRepository collectionRepository,
-            IMapper mapper)
+        public BookController(IBookService bookService)
         {
-            _bookRepository = bookRepository;
-            _authorRepository = authorRepository;
-            _collectionRepository = collectionRepository;
-            _mapper = mapper;
+            _bookService = bookService;
         }
 
         [HttpGet]
         [ProducesResponseType(200, Type=typeof(IEnumerable<Book>))]
         public IActionResult GetBooks()
         {
-            var books = _mapper.Map<List<BookDto>>(_bookRepository.GetBooks());
+            var books = _bookService.GetBooks();
              
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             return Ok(books);
         }
@@ -47,17 +36,19 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetBook(int bookId)
         {
-            if (!_bookRepository.BookExists(bookId))
-                return NotFound();
-
-            var book = _mapper.Map<BookDto>(_bookRepository.GetBook(bookId));
-
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                var book = _bookService.GetBook(bookId);
 
-            return Ok(book);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                return Ok(book);
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
         }
 
         [HttpPost]
@@ -65,39 +56,29 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult CreateBook([FromQuery] int authorId, [FromBody] BookDto bookCreate)
         {
-            if (bookCreate == null)
-                return BadRequest(ModelState);
-
-            var book = _bookRepository.GetBooks()
-                .Where(b => b.Title.Trim().ToUpper() == bookCreate.Title.TrimEnd().ToUpper())
-                .FirstOrDefault();
-
-            if (book != null)
+            try
             {
-                ModelState.AddModelError("", "book already exists");
-                return StatusCode(422, ModelState);
+                var response = _bookService.CreateBook(authorId, bookCreate);
+
+                return Ok(response);
             }
-
-            var author = _authorRepository.GetAuthor(authorId);
-
-            if (author == null)
+            catch (BadRequestException e)
             {
-                ModelState.AddModelError("", "author doesn't exist");
-                return StatusCode(404, ModelState);
+                return BadRequest();
             }
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var bookMap = _mapper.Map<Book>(bookCreate);
-
-            if (!_bookRepository.CreateBook(authorId, bookMap))
+            catch (UnprocessableException e)
             {
-                ModelState.AddModelError("", "Something went wrog while saving");
+                return StatusCode(422, new { message = e.Message });
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+            catch (Exception _)
+            {
+                ModelState.AddModelError("", "Something went wrong while updating");
                 return StatusCode(500, ModelState);
             }
-
-            return Ok("Successfully created");
         }
 
         [HttpPost("author/{bookId}")]
@@ -105,40 +86,29 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult AddOwnership([FromQuery] int authorId, int bookId)
         {
-            var book = _bookRepository.GetBook(bookId);
-
-            if (book == null)
+            try
             {
-                ModelState.AddModelError("", "book doesn't exist");
-                return StatusCode(404, ModelState);
+                var response = _bookService.AddOwnership(authorId, bookId);
+
+                return Ok(response);
             }
-
-            var author = _authorRepository.GetAuthor(authorId);
-
-            if (author == null)
+            catch (BadRequestException e)
             {
-                ModelState.AddModelError("", "author doesn't exist");
-                return StatusCode(404, ModelState);
+                return BadRequest();
             }
-
-            var bookInOwnership = _authorRepository.GetBooksByAuthor(authorId).Where(b => b.Id == bookId).FirstOrDefault();
-
-            if (bookInOwnership != null)
+            catch (UnprocessableException e)
             {
-                ModelState.AddModelError("", "ownership already exists");
-                return StatusCode(422, ModelState);
+                return StatusCode(422, new { message = e.Message });
             }
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (!_bookRepository.AddOwnership(authorId, bookId))
+            catch (NotFoundException e)
             {
-                ModelState.AddModelError("", "Something went wrog while saving");
+                return NotFound(new { message = e.Message });
+            }
+            catch (Exception _)
+            {
+                ModelState.AddModelError("", "Something went wrong while updating");
                 return StatusCode(500, ModelState);
             }
-
-            return Ok("Successfully created");
         }
 
         [HttpPost("collection/{bookId}")]
@@ -146,40 +116,29 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult AddIntoCollection([FromQuery] int collectionId, int bookId)
         {
-            var book = _bookRepository.GetBook(bookId);
-
-            if (book == null)
+            try
             {
-                ModelState.AddModelError("", "book doesn't exist");
-                return StatusCode(404, ModelState);
+                var response = _bookService.AddIntoCollection(collectionId, bookId);
+
+                return Ok(response);
             }
-
-            var collection = _collectionRepository.GetCollection(collectionId);
-
-            if (collection == null)
+            catch (BadRequestException e)
             {
-                ModelState.AddModelError("", "collection doesn't exist");
-                return StatusCode(404, ModelState);
+                return BadRequest();
             }
-
-            var bookInCollection = _collectionRepository.GetBooksByCollection(collectionId).Where(b => b.Id == bookId).FirstOrDefault();
-
-            if (bookInCollection != null)
+            catch (UnprocessableException e)
             {
-                ModelState.AddModelError("", "book is already in this collection");
-                return StatusCode(422, ModelState);
+                return StatusCode(422, new { message = e.Message });
             }
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (!_bookRepository.AddIntoCollection(collectionId, bookId))
+            catch (NotFoundException e)
             {
-                ModelState.AddModelError("", "Something went wrog while saving");
+                return NotFound(new { message = e.Message });
+            }
+            catch (Exception _)
+            {
+                ModelState.AddModelError("", "Something went wrong while updating");
                 return StatusCode(500, ModelState);
             }
-
-            return Ok("Successfully created");
         }
 
         [HttpPut("{bookId}")]
@@ -188,24 +147,25 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(404)]
         public IActionResult UpdateBook(int bookId, [FromBody] BookDto bookUpdate)
         {
-            if (bookUpdate == null || bookId != bookUpdate.Id)
-                return BadRequest(ModelState);
+            try
+            {
+                var response = _bookService.UpdateBook(bookId, bookUpdate);
 
-            if (!_bookRepository.BookExists(bookId))
-                return NotFound();
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var bookMap = _mapper.Map<Book>(bookUpdate);
-
-            if (!_bookRepository.UpdateBook(bookMap))
+                return Ok(response);
+            }
+            catch (BadRequestException e)
+            {
+                return BadRequest();
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+            catch (Exception _)
             {
                 ModelState.AddModelError("", "Something went wrong while updating");
                 return StatusCode(500, ModelState);
             }
-
-            return NoContent();
         }
 
         [HttpDelete("{bookId}")]
@@ -214,27 +174,21 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(404)]
         public IActionResult DeleteBook(int bookId)
         {
-            if (!_bookRepository.BookExists(bookId))
-                return NotFound();
-
-            var book = _bookRepository.GetBook(bookId);
-
-            if (book == null)
+            try
             {
-                ModelState.AddModelError("", "book doesn't exist");
-                return StatusCode(404, ModelState);
+                var response = _bookService.DeleteBook(bookId);
+
+                return Ok(response);
             }
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (!_bookRepository.DeleteBook(book))
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+            catch (Exception _)
             {
                 ModelState.AddModelError("", "Something went wrong while deleting");
                 return StatusCode(500, ModelState);
             }
-
-            return NoContent();
         }
     }
 }

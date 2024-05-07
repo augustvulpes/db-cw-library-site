@@ -1,7 +1,7 @@
-﻿using AutoMapper;
-using LibraryApp.Dto;
-using LibraryApp.Interfaces;
+﻿using LibraryApp.Dto;
+using LibraryApp.Interfaces.ServiceInterfaces;
 using LibraryApp.Models;
+using LibraryApp.Services.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -11,25 +11,21 @@ namespace LibraryApp.Controllers
     [ApiController]
     public class AuthorController : Controller
     {
-        private readonly IAuthorRepository _authorRepository;
-        private readonly IMapper _mapper;
+        private readonly IAuthorService _authorService;
 
-        public AuthorController(IAuthorRepository authorRepository, IMapper mapper)
+        public AuthorController(IAuthorService authorService)
         {
-            _authorRepository = authorRepository;
-            _mapper = mapper;
+            _authorService = authorService;
         }
 
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Author>))]
         public IActionResult GetAuthors()
         {
-            var authors = _mapper.Map<List<AuthorDto>>(_authorRepository.GetAuthors());
+            var authors = _authorService.GetAuthors();
 
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             return Ok(authors);
         }
@@ -39,17 +35,19 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetAuthor(int authorId)
         {
-            if (!_authorRepository.AuthorExists(authorId))
-                return NotFound();
-
-            var author = _mapper.Map<AuthorDto>(_authorRepository.GetAuthor(authorId));
-
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                var author = _authorService.GetAuthor(authorId);
 
-            return Ok(author);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                return Ok(author);
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(new {message = e.Message});
+            }
         }
 
         [HttpGet("book/{authorId}")]
@@ -57,12 +55,10 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetBooksByAuthorId(int authorId)
         {
-            var books = _mapper.Map<List<BookDto>>(_authorRepository.GetBooksByAuthor(authorId));
+            var books = _authorService.GetBooksByAuthorId(authorId);
 
             if (!ModelState.IsValid)
-            {
                 return BadRequest();
-            }
 
             return Ok(books);
         }
@@ -72,31 +68,25 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult CreateAuthor([FromBody] AuthorDto authorCreate)
         {
-            if (authorCreate == null)
-                return BadRequest(ModelState);
-
-            var author = _authorRepository.GetAuthors()
-                .Where(a => a.Name.Trim().ToUpper() == authorCreate.Name.TrimEnd().ToUpper())
-                .FirstOrDefault();
-
-            if (author != null)
+            try
             {
-                ModelState.AddModelError("", "author already exists");
-                return StatusCode(422, ModelState);
+                var response = _authorService.CreateAuthor(authorCreate);
+
+                return Ok(response);
             }
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var authorMap = _mapper.Map<Author>(authorCreate);
-
-            if (!_authorRepository.CreateAuthor(authorMap))
+            catch (BadRequestException e)
             {
-                ModelState.AddModelError("", "Something went wrog while saving");
+                return BadRequest();
+            }
+            catch (UnprocessableException e)
+            {
+                return StatusCode(422, new { message = e.Message });
+            }
+            catch (Exception _)
+            {
+                ModelState.AddModelError("", "Something went wrong while creating");
                 return StatusCode(500, ModelState);
             }
-
-            return Ok("Successfully created");
         }
 
         [HttpPut("{authorId}")]
@@ -105,24 +95,25 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(404)]
         public IActionResult UpdateAuthor(int authorId, [FromBody] AuthorDto authorUpdate)
         {
-            if (authorUpdate == null || authorId != authorUpdate.Id)
-                return BadRequest(ModelState);
+            try
+            {
+                var response = _authorService.UpdateAuthor(authorId, authorUpdate);
 
-            if (!_authorRepository.AuthorExists(authorId))
-                return NotFound();
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var authorMap = _mapper.Map<Author>(authorUpdate);
-
-            if (!_authorRepository.UpdateAuthor(authorMap))
+                return Ok(response);
+            }
+            catch (BadRequestException e)
+            {
+                return BadRequest();
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+            catch (Exception _)
             {
                 ModelState.AddModelError("", "Something went wrong while updating");
                 return StatusCode(500, ModelState);
             }
-
-            return NoContent();
         }
 
         [HttpDelete("{authorId}")]
@@ -131,27 +122,21 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(404)]
         public IActionResult DeleteAuthor(int authorId)
         {
-            if (!_authorRepository.AuthorExists(authorId))
-                return NotFound();
-
-            var author = _authorRepository.GetAuthor(authorId);
-
-            if (author == null)
+            try
             {
-                ModelState.AddModelError("", "author doesn't exist");
-                return StatusCode(404, ModelState);
+                var response = _authorService.DeleteAuthor(authorId);
+
+                return Ok(response);
             }
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (!_authorRepository.DeleteAuthor(author))
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+            catch (Exception _)
             {
                 ModelState.AddModelError("", "Something went wrong while deleting");
                 return StatusCode(500, ModelState);
             }
-
-            return NoContent();
         }
     }
 }

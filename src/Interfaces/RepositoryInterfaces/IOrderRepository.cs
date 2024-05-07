@@ -1,6 +1,6 @@
 ﻿using LibraryApp.Models;
 
-namespace LibraryApp.Interfaces
+namespace LibraryApp.Interfaces.RepositoryInterfaces
 {
     public interface IOrderRepository
     {
