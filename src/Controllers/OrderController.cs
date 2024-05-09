@@ -1,8 +1,7 @@
-﻿using AutoMapper;
-using LibraryApp.Dto;
-using LibraryApp.Interfaces.RepositoryInterfaces;
+﻿using LibraryApp.Dto;
+using LibraryApp.Interfaces.ServiceInterfaces;
 using LibraryApp.Models;
-using LibraryApp.Repository;
+using LibraryApp.Services.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -12,32 +11,21 @@ namespace LibraryApp.Controllers
     [ApiController]
     public class OrderController : Controller
     {
-        private readonly IOrderRepository _orderRepository;
-        private readonly IUserRepository _userRepository;
-        private readonly IBookRepository _bookRepository;
-        private readonly IMapper _mapper;
+        private readonly IOrderService _orderService;
 
-        public OrderController(IOrderRepository orderRepository,
-            IUserRepository userRepository,
-            IBookRepository bookRepository,
-            IMapper mapper)
+        public OrderController(IOrderService orderService)
         {
-            _orderRepository = orderRepository;
-            _userRepository = userRepository;
-            _bookRepository = bookRepository;
-            _mapper = mapper;
+            _orderService = orderService;
         }
 
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Order>))]
         public IActionResult GetAllOrders()
         {
-            var orders = _mapper.Map<List<OrderDto>>(_orderRepository.GetAllOrders());
+            var orders = _orderService.GetAllOrders();
 
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             return Ok(orders);
         }
@@ -46,12 +34,10 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(200, Type = typeof(IEnumerable<Order>))]
         public IActionResult GetNewOrders()
         {
-            var orders = _mapper.Map<List<OrderDto>>(_orderRepository.GetNewOrders());
+            var orders = _orderService.GetNewOrders();
 
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             return Ok(orders);
         }
@@ -61,17 +47,19 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetOrder(int orderId)
         {
-            if (!_orderRepository.OrderExists(orderId))
-                return NotFound();
-
-            var order = _mapper.Map<OrderDto>(_orderRepository.GetOrder(orderId));
-
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                var order = _orderService.GetOrder(orderId);
 
-            return Ok(order);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                return Ok(order);
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
         }
 
         [HttpPost]
@@ -79,37 +67,25 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult CreateOrder([FromBody] OrderDto orderCreate)
         {
-            if (orderCreate == null)
-                return BadRequest(ModelState);
-
-            var order = _userRepository.GetOrdersByUser(orderCreate.UserId)
-                .Where(o => o.BookId == orderCreate.BookId)
-                .FirstOrDefault();
-
-            if (order != null)
+            try
             {
-                ModelState.AddModelError("", "this user already has an order on this book");
-                return StatusCode(422, ModelState);
+                var response = _orderService.CreateOrder(orderCreate);
+
+                return Ok(response);
             }
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var orderMap = _mapper.Map<Order>(orderCreate);
-
-            orderMap.User = _userRepository.GetUser(orderCreate.UserId);
-            orderMap.Book = _bookRepository.GetBook(orderCreate.BookId);
-
-            if (orderMap.User == null || orderMap.Book == null)
-                return StatusCode(404, ModelState);
-
-            if (!_orderRepository.CreateOrder(orderMap))
+            catch (BadRequestException e)
             {
-                ModelState.AddModelError("", "Something went wrog while saving");
+                return BadRequest();
+            }
+            catch (UnprocessableException e)
+            {
+                return StatusCode(422, new { message = e.Message });
+            }
+            catch (Exception _)
+            {
+                ModelState.AddModelError("", "Something went wrong while creating");
                 return StatusCode(500, ModelState);
             }
-
-            return Ok("Successfully created");
         }
 
         [HttpPut("{orderId}")]
@@ -118,24 +94,25 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(404)]
         public IActionResult UpdateOrder(int orderId, [FromBody] OrderDto orderUpdate)
         {
-            if (orderUpdate == null || orderId != orderUpdate.Id)
-                return BadRequest(ModelState);
+            try
+            {
+                var response = _orderService.UpdateOrder(orderId, orderUpdate);
 
-            if (!_orderRepository.OrderExists(orderId))
-                return NotFound();
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var orderMap = _mapper.Map<Order>(orderUpdate);
-
-            if (!_orderRepository.UpdateOrder(orderMap))
+                return Ok(response);
+            }
+            catch (BadRequestException e)
+            {
+                return BadRequest();
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+            catch (Exception _)
             {
                 ModelState.AddModelError("", "Something went wrong while updating");
                 return StatusCode(500, ModelState);
             }
-
-            return NoContent();
         }
 
         [HttpDelete("{orderId}")]
@@ -144,27 +121,21 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(404)]
         public IActionResult DeleteOrder(int orderId)
         {
-            if (!_orderRepository.OrderExists(orderId))
-                return NotFound();
-
-            var order = _orderRepository.GetOrder(orderId);
-
-            if (order == null)
+            try
             {
-                ModelState.AddModelError("", "order doesn't exist");
-                return StatusCode(404, ModelState);
+                var response = _orderService.DeleteOrder(orderId);
+
+                return Ok(response);
             }
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (!_orderRepository.DeleteOrder(order))
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+            catch (Exception _)
             {
                 ModelState.AddModelError("", "Something went wrong while deleting");
                 return StatusCode(500, ModelState);
             }
-
-            return NoContent();
         }
     }
 }

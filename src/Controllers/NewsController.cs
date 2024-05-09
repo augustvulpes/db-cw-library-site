@@ -1,7 +1,7 @@
-﻿using AutoMapper;
-using LibraryApp.Dto;
-using LibraryApp.Interfaces.RepositoryInterfaces;
+﻿using LibraryApp.Dto;
+using LibraryApp.Interfaces.ServiceInterfaces;
 using LibraryApp.Models;
+using LibraryApp.Services.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryApp.Controllers
@@ -10,25 +10,21 @@ namespace LibraryApp.Controllers
     [ApiController]
     public class NewsController : Controller
     {
-        private readonly INewsRepository _newsRepository;
-        private readonly IMapper _mapper;
+        private readonly INewsService _newsService;
 
-        public NewsController(INewsRepository newsRepository, IMapper mapper)
+        public NewsController(INewsService newsService)
         {
-            _newsRepository = newsRepository;
-            _mapper = mapper;
+            _newsService = newsService;
         }
 
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<News>))]
         public IActionResult GetNews()
         {
-            var news = _mapper.Map<List<NewsDto>>(_newsRepository.GetNews());
+            var news = _newsService.GetNews();
 
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             return Ok(news);
         }
@@ -38,17 +34,19 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetNewsById(int newsId)
         {
-            if (!_newsRepository.NewsExists(newsId))
-                return NotFound();
-
-            var news = _mapper.Map<NewsDto>(_newsRepository.GetNewsById(newsId));
-
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                var news = _newsService.GetNewsById(newsId);
 
-            return Ok(news);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                return Ok(news);
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
         }
 
         [HttpPost]
@@ -56,31 +54,25 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult CreateNews([FromBody] NewsDto newsCreate)
         {
-            if (newsCreate == null)
-                return BadRequest(ModelState);
-
-            var news = _newsRepository.GetNews()
-                .Where(n => n.Title.Trim().ToUpper() == newsCreate.Title.TrimEnd().ToUpper())
-                .FirstOrDefault();
-
-            if (news != null)
+            try
             {
-                ModelState.AddModelError("", "news already exists");
-                return StatusCode(422, ModelState);
+                var response = _newsService.CreateNews(newsCreate);
+
+                return Ok(response);
             }
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var newsMap = _mapper.Map<News>(newsCreate);
-
-            if (!_newsRepository.CreateNews(newsMap))
+            catch (BadRequestException e)
             {
-                ModelState.AddModelError("", "Something went wrog while saving");
+                return BadRequest();
+            }
+            catch (UnprocessableException e)
+            {
+                return StatusCode(422, new { message = e.Message });
+            }
+            catch (Exception _)
+            {
+                ModelState.AddModelError("", "Something went wrong while creating");
                 return StatusCode(500, ModelState);
             }
-
-            return Ok("Successfully created");
         }
 
         [HttpPut("{newsId}")]
@@ -89,24 +81,25 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(404)]
         public IActionResult UpdateNews(int newsId, [FromBody] NewsDto newsUpdate)
         {
-            if (newsUpdate == null || newsId != newsUpdate.Id)
-                return BadRequest(ModelState);
+            try
+            {
+                var response = _newsService.UpdateNews(newsId, newsUpdate);
 
-            if (!_newsRepository.NewsExists(newsId))
-                return NotFound();
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var newsMap = _mapper.Map<News>(newsUpdate);
-
-            if (!_newsRepository.UpdateNews(newsMap))
+                return Ok(response);
+            }
+            catch (BadRequestException e)
+            {
+                return BadRequest();
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+            catch (Exception _)
             {
                 ModelState.AddModelError("", "Something went wrong while updating");
                 return StatusCode(500, ModelState);
             }
-
-            return NoContent();
         }
 
         [HttpDelete("{newsId}")]
@@ -115,27 +108,21 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(404)]
         public IActionResult DeleteNews(int newsId)
         {
-            if (!_newsRepository.NewsExists(newsId))
-                return NotFound();
-
-            var news = _newsRepository.GetNewsById(newsId);
-
-            if (news == null)
+            try
             {
-                ModelState.AddModelError("", "news doesn't exist");
-                return StatusCode(404, ModelState);
+                var response = _newsService.DeleteNews(newsId);
+
+                return Ok(response);
             }
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (!_newsRepository.DeleteNews(news))
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+            catch (Exception _)
             {
                 ModelState.AddModelError("", "Something went wrong while deleting");
                 return StatusCode(500, ModelState);
             }
-
-            return NoContent();
         }
     }
 }

@@ -4,7 +4,6 @@ using LibraryApp.Interfaces.RepositoryInterfaces;
 using LibraryApp.Interfaces.ServiceInterfaces;
 using LibraryApp.Models;
 using LibraryApp.Services.Exceptions;
-using Microsoft.AspNetCore.Mvc;
 
 
 namespace LibraryApp.Services
@@ -44,7 +43,7 @@ namespace LibraryApp.Services
             return books;
         }
 
-        public string CreateAuthor([FromBody] AuthorDto authorCreate)
+        public string CreateAuthor(AuthorDto authorCreate)
         {
             if (authorCreate == null)
                 throw new BadRequestException();
@@ -64,7 +63,7 @@ namespace LibraryApp.Services
             return "Successfully created";
         }
 
-        public string UpdateAuthor(int authorId, [FromBody] AuthorDto authorUpdate)
+        public string UpdateAuthor(int authorId, AuthorDto authorUpdate)
         {
             if (authorUpdate == null || authorId != authorUpdate.Id)
                 throw new BadRequestException();

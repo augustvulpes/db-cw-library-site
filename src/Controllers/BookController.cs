@@ -1,7 +1,6 @@
 ﻿using LibraryApp.Dto;
 using LibraryApp.Interfaces.ServiceInterfaces;
 using LibraryApp.Models;
-using LibraryApp.Services;
 using LibraryApp.Services.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 

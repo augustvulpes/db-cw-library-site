@@ -1,8 +1,7 @@
-﻿using AutoMapper;
-using LibraryApp.Dto;
-using LibraryApp.Interfaces.RepositoryInterfaces;
+﻿using LibraryApp.Dto;
+using LibraryApp.Interfaces.ServiceInterfaces;
 using LibraryApp.Models;
-using LibraryApp.Repository;
+using LibraryApp.Services.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -12,32 +11,21 @@ namespace LibraryApp.Controllers
     [ApiController]
     public class ReviewController : Controller
     {
-        private readonly IReviewRepository _reviewRepository;
-        private readonly IUserRepository _userRepository;
-        private readonly IBookRepository _bookRepository;
-        private readonly IMapper _mapper;
+        private readonly IReviewService _reviewService;
 
-        public ReviewController(IReviewRepository reviewRepository,
-            IUserRepository userRepository,
-            IBookRepository bookRepository,
-            IMapper mapper)
+        public ReviewController(IReviewService reviewService)
         {
-            _reviewRepository = reviewRepository;
-            _userRepository = userRepository;
-            _bookRepository = bookRepository;
-            _mapper = mapper;
+            _reviewService = reviewService;
         }
 
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Review>))]
         public IActionResult GetReviews()
         {
-            var review = _mapper.Map<List<ReviewDto>>(_reviewRepository.GetReviews());
+            var review = _reviewService.GetReviews();
 
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             return Ok(review);
         }
@@ -47,17 +35,19 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetReview(int reviewId)
         {
-            if (!_reviewRepository.ReviewExists(reviewId))
-                return NotFound();
-
-            var review = _mapper.Map<ReviewDto>(_reviewRepository.GetReview(reviewId));
-
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                var review = _reviewService.GetReview(reviewId);
 
-            return Ok(review);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                return Ok(review);
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
         }
 
         [HttpPost]
@@ -65,37 +55,25 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult CreateReview([FromBody] ReviewDto reviewCreate)
         {
-            if (reviewCreate == null)
-                return BadRequest(ModelState);
-
-            var review = _userRepository.GetReviewsByUser(reviewCreate.UserId)
-                .Where(r => r.BookId == reviewCreate.BookId)
-                .FirstOrDefault();
-
-            if (review != null)
+            try
             {
-                ModelState.AddModelError("", "this user already has a review on this book");
-                return StatusCode(422, ModelState);
+                var response = _reviewService.CreateReview(reviewCreate);
+
+                return Ok(response);
             }
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var reviewMap = _mapper.Map<Review>(reviewCreate);
-
-            reviewMap.User = _userRepository.GetUser(reviewCreate.UserId);
-            reviewMap.Book = _bookRepository.GetBook(reviewCreate.BookId);
-
-            if (reviewMap.User == null || reviewMap.Book == null)
-                return StatusCode(404, ModelState);
-
-            if (!_reviewRepository.CreateReview(reviewMap))
+            catch (BadRequestException e)
             {
-                ModelState.AddModelError("", "Something went wrog while saving");
+                return BadRequest();
+            }
+            catch (UnprocessableException e)
+            {
+                return StatusCode(422, new { message = e.Message });
+            }
+            catch (Exception _)
+            {
+                ModelState.AddModelError("", "Something went wrong while creating");
                 return StatusCode(500, ModelState);
             }
-
-            return Ok("Successfully created");
         }
 
         [HttpPut("{reviewId}")]
@@ -104,24 +82,25 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(404)]
         public IActionResult UpdateReview(int reviewId, [FromBody] ReviewDto reviewUpdate)
         {
-            if (reviewUpdate == null || reviewId != reviewUpdate.Id)
-                return BadRequest(ModelState);
+            try
+            {
+                var response = _reviewService.UpdateReview(reviewId, reviewUpdate);
 
-            if (!_reviewRepository.ReviewExists(reviewId))
-                return NotFound();
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var reviewMap = _mapper.Map<Review>(reviewUpdate);
-
-            if (!_reviewRepository.UpdateReview(reviewMap))
+                return Ok(response);
+            }
+            catch (BadRequestException e)
+            {
+                return BadRequest();
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+            catch (Exception _)
             {
                 ModelState.AddModelError("", "Something went wrong while updating");
                 return StatusCode(500, ModelState);
             }
-
-            return NoContent();
         }
 
         [HttpDelete("{reviewId}")]
@@ -130,27 +109,21 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(404)]
         public IActionResult DeleteReview(int reviewId)
         {
-            if (!_reviewRepository.ReviewExists(reviewId))
-                return NotFound();
-
-            var review = _reviewRepository.GetReview(reviewId);
-
-            if (review == null)
+            try
             {
-                ModelState.AddModelError("", "review doesn't exist");
-                return StatusCode(404, ModelState);
+                var response = _reviewService.DeleteReview(reviewId);
+
+                return Ok(response);
             }
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (!_reviewRepository.DeleteReview(review))
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+            catch (Exception _)
             {
                 ModelState.AddModelError("", "Something went wrong while deleting");
                 return StatusCode(500, ModelState);
             }
-
-            return NoContent();
         }
     }
 }

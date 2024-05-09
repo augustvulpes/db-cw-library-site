@@ -1,8 +1,8 @@
-﻿using AutoMapper;
-using LibraryApp.Dto;
-using LibraryApp.Interfaces.RepositoryInterfaces;
+﻿using LibraryApp.Dto;
+using LibraryApp.Interfaces.ServiceInterfaces;
 using LibraryApp.Models;
-using LibraryApp.Repository;
+using LibraryApp.Services.Exceptions;
+using LibraryApp.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryApp.Controllers
@@ -11,24 +11,20 @@ namespace LibraryApp.Controllers
     [ApiController]
     public class UserController : Controller
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IMapper _mapper;
-        public UserController(IUserRepository userRepository, IMapper mapper)
+        private readonly IUserService _userService;
+        public UserController(IUserService userService)
         {
-            _userRepository = userRepository;
-            _mapper = mapper;
+            _userService = userService;
         }
 
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<User>))]
         public IActionResult GetUsers()
         {
-            var users = _mapper.Map<List<UserDto>>(_userRepository.GetUsers());
+            var users = _userService.GetUsers();
 
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             return Ok(users);
         }
@@ -38,17 +34,19 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetUser(int userId)
         {
-            if (!_userRepository.UserExists(userId))
-                return NotFound();
-
-            var user = _mapper.Map<UserDto>(_userRepository.GetUser(userId));
-
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                var user = _userService.GetUser(userId);
 
-            return Ok(user);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                return Ok(user);
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
         }
 
         [HttpGet("reviews/{userId}")]
@@ -56,14 +54,19 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetReviewsByUser(int userId)
         {
-            var reviews = _mapper.Map<List<ReviewDto>>(_userRepository.GetReviewsByUser(userId));
-
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest();
-            }
+                var reviews = _userService.GetReviewsByUser(userId);
 
-            return Ok(reviews);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                return Ok(reviews);
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
         }
 
         [HttpGet("orders/{userId}")]
@@ -71,14 +74,19 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetOrdersByUser(int userId)
         {
-            var orders = _mapper.Map<List<OrderDto>>(_userRepository.GetOrdersByUser(userId));
-
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest();
-            }
+                var orders = _userService.GetOrdersByUser(userId);
 
-            return Ok(orders);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                return Ok(orders);
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
         }
 
         [HttpPost]
@@ -86,31 +94,25 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult CreateUser([FromBody] UserDto userCreate)
         {
-            if (userCreate == null)
-                return BadRequest(ModelState);
-
-            var user = _userRepository.GetUsers()
-                .Where(u => u.Email.Trim().ToUpper() == userCreate.Email.TrimEnd().ToUpper())
-                .FirstOrDefault();
-
-            if (user != null)
+            try
             {
-                ModelState.AddModelError("", "user already exists");
-                return StatusCode(422, ModelState);
+                var response = _userService.CreateUser(userCreate);
+
+                return Ok(response);
             }
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var userMap = _mapper.Map<User>(userCreate);
-
-            if (!_userRepository.CreateUser(userMap))
+            catch (BadRequestException e)
             {
-                ModelState.AddModelError("", "Something went wrog while saving");
+                return BadRequest();
+            }
+            catch (UnprocessableException e)
+            {
+                return StatusCode(422, new { message = e.Message });
+            }
+            catch (Exception _)
+            {
+                ModelState.AddModelError("", "Something went wrong while creating");
                 return StatusCode(500, ModelState);
             }
-
-            return Ok("Successfully created");
         }
 
         [HttpPut("{userId}")]
@@ -119,24 +121,25 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(404)]
         public IActionResult UpdateUser(int userId, [FromBody] UserDto userUpdate)
         {
-            if (userUpdate == null || userId != userUpdate.Id)
-                return BadRequest(ModelState);
+            try
+            {
+                var response = _userService.UpdateUser(userId, userUpdate);
 
-            if (!_userRepository.UserExists(userId))
-                return NotFound();
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var userMap = _mapper.Map<User>(userUpdate);
-
-            if (!_userRepository.UpdateUser(userMap))
+                return Ok(response);
+            }
+            catch (BadRequestException e)
+            {
+                return BadRequest();
+            }
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+            catch (Exception _)
             {
                 ModelState.AddModelError("", "Something went wrong while updating");
                 return StatusCode(500, ModelState);
             }
-
-            return NoContent();
         }
 
         [HttpDelete("{userId}")]
@@ -145,28 +148,21 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(404)]
         public IActionResult DeleteUser(int userId)
         {
-            if (!_userRepository.UserExists(userId))
-                return NotFound();
-
-            var user = _userRepository.GetUser(userId);
-
-            if (user == null)
+            try
             {
-                ModelState.AddModelError("", "user doesn't exist");
-                return StatusCode(404, ModelState);
+                var response = _userService.DeleteUser(userId);
+
+                return Ok(response);
             }
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (!_userRepository.DeleteUser(user))
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
+            catch (Exception _)
             {
                 ModelState.AddModelError("", "Something went wrong while deleting");
                 return StatusCode(500, ModelState);
             }
-
-            return NoContent();
         }
-
     }
 }
