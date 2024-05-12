@@ -12,9 +12,12 @@ namespace LibraryApp.Controllers
     public class UserController : Controller
     {
         private readonly IUserService _userService;
-        public UserController(IUserService userService)
+        private readonly ITokenService _tokenService;
+
+        public UserController(IUserService userService, ITokenService tokenService)
         {
             _userService = userService;
+            _tokenService = tokenService;
         }
 
         [HttpGet]
@@ -32,7 +35,7 @@ namespace LibraryApp.Controllers
         [HttpGet("{userId}")]
         [ProducesResponseType(200, Type = typeof(User))]
         [ProducesResponseType(400)]
-        public IActionResult GetUser(int userId)
+        public IActionResult GetUser(string userId)
         {
             try
             {
@@ -52,7 +55,7 @@ namespace LibraryApp.Controllers
         [HttpGet("reviews/{userId}")]
         [ProducesResponseType(200, Type = typeof(Review))]
         [ProducesResponseType(400)]
-        public IActionResult GetReviewsByUser(int userId)
+        public IActionResult GetReviewsByUser(string userId)
         {
             try
             {
@@ -72,7 +75,7 @@ namespace LibraryApp.Controllers
         [HttpGet("orders/{userId}")]
         [ProducesResponseType(200, Type = typeof(Order))]
         [ProducesResponseType(400)]
-        public IActionResult GetOrdersByUser(int userId)
+        public IActionResult GetOrdersByUser(string userId)
         {
             try
             {
@@ -86,6 +89,74 @@ namespace LibraryApp.Controllers
             catch (NotFoundException e)
             {
                 return NotFound(new { message = e.Message });
+            }
+        }
+
+        [HttpPost("register")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> Register([FromBody] UserDto userRegister)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                var user = await _userService.Register(userRegister);
+
+                return Ok(new
+                {
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    Token = _tokenService.CreateToken(user)
+                });
+            }
+            catch (BadRequestException e)
+            {
+                return BadRequest();
+            }
+            catch (UnprocessableException e)
+            {
+                return StatusCode(422, new { message = e.Message });
+            }
+            catch (Exception e)
+            {
+                ModelState.AddModelError("", "Something went wrong while regist");
+                return StatusCode(500, new { message = e.Message });
+            }
+        }
+
+        [HttpPost("login")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> Login([FromBody] LoginDto userLogin)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                var user = await _userService.Login(userLogin);
+
+                return Ok(new
+                {
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    Token = _tokenService.CreateToken(user)
+                });
+            }
+            catch (BadRequestException e)
+            {
+                return BadRequest();
+            }
+            catch (UnauthorizedException e)
+            {
+                return StatusCode(401, new { message = e.Message });
+            }
+            catch (Exception e)
+            {
+                ModelState.AddModelError("", "Something went wrong while regist");
+                return StatusCode(500, new { message = e.Message });
             }
         }
 
@@ -119,7 +190,7 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdateUser(int userId, [FromBody] UserDto userUpdate)
+        public IActionResult UpdateUser(string userId, [FromBody] UserDto userUpdate)
         {
             try
             {
@@ -146,7 +217,7 @@ namespace LibraryApp.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult DeleteUser(int userId)
+        public IActionResult DeleteUser(string userId)
         {
             try
             {

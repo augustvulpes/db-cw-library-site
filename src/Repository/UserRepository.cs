@@ -13,12 +13,12 @@ namespace LibraryApp.Repository
             _context = context;
         }
 
-        public ICollection<Order> GetOrdersByUser(int userId)
+        public ICollection<Order> GetOrdersByUser(string userId)
         {
             return _context.Users.Where(u => u.Id == userId).Select(u => u.Orders).FirstOrDefault();
         }
 
-        public ICollection<Review> GetReviewsByUser(int userId)
+        public ICollection<Review> GetReviewsByUser(string userId)
         {
             return _context.Users.Where(u => u.Id == userId).Select(u => u.Reviews).FirstOrDefault();
         }
@@ -28,12 +28,12 @@ namespace LibraryApp.Repository
             return _context.Users.ToList();
         }
 
-        public User GetUser(int id)
+        public User GetUser(string id)
         {
             return _context.Users.Where(u => u.Id == id).FirstOrDefault();
         }
 
-        public bool UserExists(int id)
+        public bool UserExists(string id)
         {
             return _context.Users.Any(u => u.Id == id);
         }

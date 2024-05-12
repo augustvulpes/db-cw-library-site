@@ -1,11 +1,13 @@
 ﻿using LibraryApp.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace LibraryApp.Data
 {
-    public class DataContext : DbContext
+    public class DataContext : IdentityDbContext<User>
     {
-        public DataContext(DbContextOptions<DataContext> options) : base(options)
+        public DataContext(DbContextOptions options) : base(options)
         {
 
         }
@@ -23,6 +25,8 @@ namespace LibraryApp.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<AuthorBook>()
                 .HasKey(ab => new { ab.AuthorId, ab.BookId });
             modelBuilder.Entity<AuthorBook>()
@@ -34,7 +38,6 @@ namespace LibraryApp.Data
                 .WithMany(ab => ab.AuthorBooks)
                 .HasForeignKey(b => b.BookId);
 
-
             modelBuilder.Entity<CollectionBook>()
                 .HasKey(cb => new { cb.CollectionId, cb.BookId });
             modelBuilder.Entity<CollectionBook>()
@@ -45,6 +48,21 @@ namespace LibraryApp.Data
                 .HasOne(b => b.Book)
                 .WithMany(cb => cb.CollectionBooks)
                 .HasForeignKey(b => b.BookId);
+
+            List<IdentityRole> roles = new List<IdentityRole>()
+            {
+                new IdentityRole
+                {
+                    Name = "Admin",
+                    NormalizedName = "ADMIN"
+                },
+                new IdentityRole
+                {
+                    Name = "User",
+                    NormalizedName = "USER"
+                }
+            };
+            modelBuilder.Entity<IdentityRole>().HasData(roles);
         }
     }
 }

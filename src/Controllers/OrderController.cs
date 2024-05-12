@@ -77,6 +77,10 @@ namespace LibraryApp.Controllers
             {
                 return BadRequest();
             }
+            catch (NotFoundException e)
+            {
+                return NotFound(new { message = e.Message });
+            }
             catch (UnprocessableException e)
             {
                 return StatusCode(422, new { message = e.Message });
