@@ -13,17 +13,17 @@ namespace LibraryApp.Repository
             _context = context;
         }
 
-        public ICollection<Order> GetOrdersByUser(string userId)
+        public List<Order> GetOrdersByUser(string userId)
         {
-            return _context.Users.Where(u => u.Id == userId).Select(u => u.Orders).FirstOrDefault();
+            return _context.Users.Where(u => u.Id == userId).Select(u => u.Orders).First().ToList();
         }
 
-        public ICollection<Review> GetReviewsByUser(string userId)
+        public List<Review> GetReviewsByUser(string userId)
         {
-            return _context.Users.Where(u => u.Id == userId).Select(u => u.Reviews).FirstOrDefault();
+            return _context.Users.Where(u => u.Id == userId).Select(u => u.Reviews).First().ToList();
         }
 
-        public ICollection<User> GetUsers()
+        public List<User> GetUsers()
         {
             return _context.Users.ToList();
         }

@@ -4,8 +4,8 @@ namespace LibraryApp.Interfaces.RepositoryInterfaces
 {
     public interface IOrderRepository
     {
-        ICollection<Order> GetAllOrders();
-        ICollection<Order> GetNewOrders();
+        List<Order> GetAllOrders();
+        List<Order> GetNewOrders();
         Order GetOrder(int id);
         bool OrderExists(int id);
         bool CreateOrder(Order order);

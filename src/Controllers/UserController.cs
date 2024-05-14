@@ -50,6 +50,11 @@ namespace LibraryApp.Controllers
             {
                 return NotFound(new { message = e.Message });
             }
+            catch (Exception e)
+            {
+                ModelState.AddModelError("", "Something went wrong while regist");
+                return StatusCode(500, new { message = e.Message });
+            }
         }
 
         [HttpGet("reviews/{userId}")]
@@ -70,6 +75,11 @@ namespace LibraryApp.Controllers
             {
                 return NotFound(new { message = e.Message });
             }
+            catch (Exception e)
+            {
+                ModelState.AddModelError("", "Something went wrong while regist");
+                return StatusCode(500, new { message = e.Message });
+            }
         }
 
         [HttpGet("orders/{userId}")]
@@ -89,6 +99,11 @@ namespace LibraryApp.Controllers
             catch (NotFoundException e)
             {
                 return NotFound(new { message = e.Message });
+            }
+            catch (Exception e)
+            {
+                ModelState.AddModelError("", "Something went wrong while regist");
+                return StatusCode(500, new { message = e.Message });
             }
         }
 
@@ -121,7 +136,7 @@ namespace LibraryApp.Controllers
             }
             catch (Exception e)
             {
-                ModelState.AddModelError("", "Something went wrong while regist");
+                ModelState.AddModelError("", "Something went wrong while register");
                 return StatusCode(500, new { message = e.Message });
             }
         }
@@ -155,7 +170,7 @@ namespace LibraryApp.Controllers
             }
             catch (Exception e)
             {
-                ModelState.AddModelError("", "Something went wrong while regist");
+                ModelState.AddModelError("", "Something went wrong while login");
                 return StatusCode(500, new { message = e.Message });
             }
         }
@@ -179,10 +194,10 @@ namespace LibraryApp.Controllers
             {
                 return StatusCode(422, new { message = e.Message });
             }
-            catch (Exception _)
+            catch (Exception e)
             {
-                ModelState.AddModelError("", "Something went wrong while creating");
-                return StatusCode(500, ModelState);
+                ModelState.AddModelError("", "Something went wrong while regist");
+                return StatusCode(500, new { message = e.Message });
             }
         }
 
@@ -206,10 +221,10 @@ namespace LibraryApp.Controllers
             {
                 return NotFound(new { message = e.Message });
             }
-            catch (Exception _)
+            catch (Exception e)
             {
-                ModelState.AddModelError("", "Something went wrong while updating");
-                return StatusCode(500, ModelState);
+                ModelState.AddModelError("", "Something went wrong while regist");
+                return StatusCode(500, new { message = e.Message });
             }
         }
 
@@ -229,10 +244,10 @@ namespace LibraryApp.Controllers
             {
                 return NotFound(new { message = e.Message });
             }
-            catch (Exception _)
+            catch (Exception e)
             {
-                ModelState.AddModelError("", "Something went wrong while deleting");
-                return StatusCode(500, ModelState);
+                ModelState.AddModelError("", "Something went wrong while regist");
+                return StatusCode(500, new { message = e.Message });
             }
         }
     }

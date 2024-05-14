@@ -12,7 +12,7 @@ namespace LibraryApp.Repository
             _context = context;
         }
 
-        public ICollection<News> GetNews()
+        public List<News> GetNews()
         {
             return _context.News.ToList();
         }

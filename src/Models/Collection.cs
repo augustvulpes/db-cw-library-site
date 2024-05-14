@@ -6,6 +6,6 @@
         public string Title { get; set; }
         public string Description { get; set; }
         public DateTime CreationDate { get; set; }
-        public ICollection<CollectionBook> CollectionBooks { get; set; }
+        public List<CollectionBook> CollectionBooks { get; set; }
     }
 }

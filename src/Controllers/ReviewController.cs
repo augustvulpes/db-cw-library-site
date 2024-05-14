@@ -76,7 +76,7 @@ namespace LibraryApp.Controllers
             catch (Exception _)
             {
                 ModelState.AddModelError("", "Something went wrong while creating");
-                return StatusCode(500, ModelState);
+                return StatusCode(500, new { message = _.Message });
             }
         }
 

@@ -4,7 +4,7 @@ namespace LibraryApp.Interfaces.RepositoryInterfaces
 {
     public interface INewsRepository
     {
-        ICollection<News> GetNews();
+        List<News> GetNews();
         News GetNewsById(int id);
         bool NewsExists(int id);
         bool CreateNews(News news);

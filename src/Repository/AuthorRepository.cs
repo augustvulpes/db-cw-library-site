@@ -22,12 +22,12 @@ namespace LibraryApp.Repository
             return _context.Authors.Where(a => a.Id == id).FirstOrDefault();
         }
 
-        public ICollection<Author> GetAuthors()
+        public List<Author> GetAuthors()
         {
             return _context.Authors.OrderBy(a => a.Id).ToList();
         }
 
-        public ICollection<Book> GetBooksByAuthor(int authorId)
+        public List<Book> GetBooksByAuthor(int authorId)
         {
             return _context.AuthorsBooks.Where(ab => ab.AuthorId == authorId).Select(ab => ab.Book).ToList();
         }

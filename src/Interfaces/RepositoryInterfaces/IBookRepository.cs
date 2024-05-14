@@ -4,8 +4,8 @@ namespace LibraryApp.Interfaces.RepositoryInterfaces
 {
     public interface IBookRepository
     {
-        ICollection<Book> GetBooks();
-        ICollection<Book> GetBooks(string title);
+        List<Book> GetBooks();
+        List<Book> GetBooks(string title);
         Book GetBook(int id);
         bool BookExists(int id);
         bool CreateBook(int authorId, Book book);

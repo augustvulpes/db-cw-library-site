@@ -4,9 +4,9 @@ namespace LibraryApp.Interfaces.RepositoryInterfaces
 {
     public interface IAuthorRepository
     {
-        ICollection<Author> GetAuthors();
+        List<Author> GetAuthors();
         Author GetAuthor(int id);
-        ICollection<Book> GetBooksByAuthor(int authorId);
+        List<Book> GetBooksByAuthor(int authorId);
         bool AuthorExists(int id);
         bool CreateAuthor(Author author);
         bool UpdateAuthor(Author author);

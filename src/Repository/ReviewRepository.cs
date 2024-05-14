@@ -13,7 +13,7 @@ namespace LibraryApp.Repository
             _context = context;
         }
 
-        public ICollection<Review> GetReviews()
+        public List<Review> GetReviews()
         {
             return _context.Reviews.ToList();
         }

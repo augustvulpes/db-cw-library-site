@@ -4,7 +4,7 @@ namespace LibraryApp.Interfaces.RepositoryInterfaces
 {
     public interface IReviewRepository
     {
-        ICollection<Review> GetReviews();
+        List<Review> GetReviews();
         Review GetReview(int id);
         bool ReviewExists(int id);
         bool CreateReview(Review review);

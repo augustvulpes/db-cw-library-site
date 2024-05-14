@@ -17,15 +17,15 @@ namespace LibraryApp.Services
         private readonly SignInManager<User> _signinManager;
         private readonly IMapper _mapper;
 
-        public UserService(IUserRepository userRepository, 
+        public UserService(IUserRepository userRepository, IMapper mapper,
             UserManager<User> userManager,
-            SignInManager<User> signInManager,
-            IMapper mapper)
+            SignInManager<User> signInManager)
         {
             _userRepository = userRepository;
-            _userManager = userManager;
-            _signinManager = signInManager;
             _mapper = mapper;
+
+            if (userManager != null) { _userManager = userManager; }
+            if (signInManager != null) { _signinManager = signInManager; }
         }
 
         public List<UserDto> GetUsers()

@@ -14,7 +14,7 @@ namespace LibraryApp.Models
         public string Surname { get; set; }
         public string Patronymic { get; set; }
         public DateTime Birthday { get; set; }
-        public ICollection<Review> Reviews { get; set; }
-        public ICollection<Order> Orders { get; set; }
+        public List<Review> Reviews { get; set; }
+        public List<Order> Orders { get; set; }
     }
 }

@@ -13,12 +13,12 @@ namespace LibraryApp.Repository
             _context = context;
         }
 
-        public ICollection<Order> GetAllOrders()
+        public List<Order> GetAllOrders()
         {
             return _context.Orders.ToList();
         }
 
-        public ICollection<Order> GetNewOrders()
+        public List<Order> GetNewOrders()
         {
             return _context.Orders.Where(o => o.State == "new").ToList();
         }

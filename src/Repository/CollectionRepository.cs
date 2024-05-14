@@ -18,17 +18,17 @@ namespace LibraryApp.Repository
             return _context.Collections.Any(c => c.Id == id);
         }
 
-        public ICollection<Book> GetBooksByCollection(int id)
+        public List<Book> GetBooksByCollection(int id)
         {
             return _context.CollectionsBooks.Where(cb => cb.CollectionId == id).Select(cb => cb.Book).ToList();
         }
 
-        public ICollection<Collection> GetCollectionByBook(int id)
+        public List<Collection> GetCollectionByBook(int id)
         {
             return _context.CollectionsBooks.Where(cb => cb.BookId == id).Select(cb => cb.Collection).ToList();
         }
 
-        public ICollection<Collection> GetCollections()
+        public List<Collection> GetCollections()
         {
             return _context.Collections.ToList();
         }

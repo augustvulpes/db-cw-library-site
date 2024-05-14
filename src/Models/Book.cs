@@ -9,9 +9,9 @@ namespace LibraryApp.Models
         public int Pages { get; set; }
         public int Year { get; set; }
         public string BBK { get; set; }
-        public ICollection<Review> Reviews { get; set; }
-        public ICollection<Order> Orders { get; set; }
-        public ICollection<AuthorBook> AuthorBooks { get; set; }
-        public ICollection<CollectionBook> CollectionBooks { get; set; }
+        public List<Review> Reviews { get; set; }
+        public List<Order> Orders { get; set; }
+        public List<AuthorBook> AuthorBooks { get; set; }
+        public List<CollectionBook> CollectionBooks { get; set; }
     }
 }
