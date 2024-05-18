@@ -9,7 +9,7 @@ namespace LibraryApp.Data
     {
         public DataContext(DbContextOptions options) : base(options)
         {
-
+            
         }
 
         public DbSet<Author> Authors { get; set; }
