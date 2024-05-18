@@ -9,12 +9,13 @@ using LibraryApp.Data;
 using Microsoft.EntityFrameworkCore;
 using LibraryApp.Repository;
 
-namespace LibraryApp.Tests.UnitTests.Services
+namespace LibraryApp.Tests.Integration.DataAccess
 {
     public class BookDataAccessTest
     {
         private readonly IBookService _bookService;
         private readonly IAuthorService _authorService;
+        private readonly ICollectionService _collectionService;
         private readonly IMapper _mapper;
         public readonly IBookRepository _bookRepository;
         public readonly IAuthorRepository _authorRepository;
@@ -37,6 +38,7 @@ namespace LibraryApp.Tests.UnitTests.Services
             _mapper = mapper;
 
             _authorService = new AuthorService(_authorRepository, _mapper);
+            _collectionService = new CollectionService(_collectionRepository, _mapper);
             _bookService = new BookService(_bookRepository,
                 _authorRepository,
                 _collectionRepository,
@@ -46,11 +48,11 @@ namespace LibraryApp.Tests.UnitTests.Services
         [Fact]
         public void PostGetDeleteBooks()
         {
-            var testAuthor = new AuthorDto { Id = 9876, Country = "TEST", Name = "TEST001" };
+            var testAuthor = new AuthorDto { Id = 3333, Country = "TEST3333", Name = "TEST3333" };
 
             _authorService.CreateAuthor(testAuthor);
 
-            var testBook = new BookDto { Id = 9999, Year = 2000, BBK="aaa", Pages=42, Title="TEST" };
+            var testBook = new BookDto { Id = 4444, Year = 2000, BBK="aaa", Pages=42, Title="TEST4444" };
 
             _bookService.CreateBook(testAuthor.Id, testBook);
 
@@ -85,5 +87,29 @@ namespace LibraryApp.Tests.UnitTests.Services
 
             Assert.Equivalent(books, resultBooks);
         }
+
+        //[Fact]
+        //public void AddIntoCollection()
+        //{
+        //    var testAuthor = new AuthorDto { Id = 9988, Country = "TEST", Name = "TEST001" };
+        //    _authorService.CreateAuthor(testAuthor);
+
+        //    var testBook = new BookDto { Id = 9988, Year = 2000, BBK = "aaa", Pages = 42, Title = "TEST" };
+        //    _bookService.CreateBook(testAuthor.Id, testBook);
+
+        //    var testCollection = new CollectionDto { Id = 9999, Title = "TEST", CreationDate = DateTime.UtcNow, Description = "TEST" };
+        //    _collectionService.CreateCollection(testCollection);
+
+        //    _bookService.AddIntoCollection(testCollection.Id, testBook.Id);
+        //    var collectionBooks = _collectionService.GetBooksByCollectionId(testCollection.Id);
+
+        //    var result = collectionBooks.Contains(testBook);
+
+        //    _bookService.DeleteBook(testBook.Id);
+        //    _authorService.DeleteAuthor(testAuthor.Id);
+        //    _collectionService.DeleteCollection(testCollection.Id);
+
+        //    Assert.Equivalent(true, result);
+        //}
     }
 }

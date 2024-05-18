@@ -9,7 +9,7 @@ using LibraryApp.Data;
 using Microsoft.EntityFrameworkCore;
 using LibraryApp.Repository;
 
-namespace LibraryApp.Tests.UnitTests.Services
+namespace LibraryApp.Tests.Integration.DataAccess
 {
     public class AuthorDataAccessTest
     {
