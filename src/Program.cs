@@ -65,7 +65,7 @@ builder.Services.AddSwaggerGen(option =>
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("WebApiDatabase"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("WebApiDatabase"), options => options.EnableRetryOnFailure());
 });
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
