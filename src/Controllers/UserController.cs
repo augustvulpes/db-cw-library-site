@@ -13,11 +13,13 @@ namespace LibraryApp.Controllers
     {
         private readonly IUserService _userService;
         private readonly ITokenService _tokenService;
+        private readonly ILogger<UserController> _logger;
 
-        public UserController(IUserService userService, ITokenService tokenService)
+        public UserController(IUserService userService, ITokenService tokenService, ILogger<UserController> logger)
         {
             _userService = userService;
             _tokenService = tokenService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -48,10 +50,12 @@ namespace LibraryApp.Controllers
             }
             catch (NotFoundException e)
             {
+                _logger.LogError(e, e.Message);
                 return NotFound(new { message = e.Message });
             }
             catch (Exception e)
             {
+                _logger.LogError(e, e.Message);
                 ModelState.AddModelError("", "Something went wrong while regist");
                 return StatusCode(500, new { message = e.Message });
             }
@@ -73,10 +77,12 @@ namespace LibraryApp.Controllers
             }
             catch (NotFoundException e)
             {
+                _logger.LogError(e, e.Message);
                 return NotFound(new { message = e.Message });
             }
             catch (Exception e)
             {
+                _logger.LogError(e, e.Message);
                 ModelState.AddModelError("", "Something went wrong while regist");
                 return StatusCode(500, new { message = e.Message });
             }
@@ -98,10 +104,12 @@ namespace LibraryApp.Controllers
             }
             catch (NotFoundException e)
             {
+                _logger.LogError(e, e.Message);
                 return NotFound(new { message = e.Message });
             }
             catch (Exception e)
             {
+                _logger.LogError(e, e.Message);
                 ModelState.AddModelError("", "Something went wrong while regist");
                 return StatusCode(500, new { message = e.Message });
             }
@@ -128,14 +136,17 @@ namespace LibraryApp.Controllers
             }
             catch (BadRequestException e)
             {
+                _logger.LogError(e, e.Message);
                 return BadRequest();
             }
             catch (UnprocessableException e)
             {
+                _logger.LogError(e, e.Message);
                 return StatusCode(422, new { message = e.Message });
             }
             catch (Exception e)
             {
+                _logger.LogError(e, e.Message);
                 ModelState.AddModelError("", "Something went wrong while register");
                 return StatusCode(500, new { message = e.Message });
             }
@@ -162,14 +173,17 @@ namespace LibraryApp.Controllers
             }
             catch (BadRequestException e)
             {
+                _logger.LogError(e, e.Message);
                 return BadRequest();
             }
             catch (UnauthorizedException e)
             {
+                _logger.LogError(e, e.Message);
                 return StatusCode(401, new { message = e.Message });
             }
             catch (Exception e)
             {
+                _logger.LogError(e, e.Message);
                 ModelState.AddModelError("", "Something went wrong while login");
                 return StatusCode(500, new { message = e.Message });
             }
@@ -188,14 +202,17 @@ namespace LibraryApp.Controllers
             }
             catch (BadRequestException e)
             {
+                _logger.LogError(e, e.Message);
                 return BadRequest();
             }
             catch (UnprocessableException e)
             {
+                _logger.LogError(e, e.Message);
                 return StatusCode(422, new { message = e.Message });
             }
             catch (Exception e)
             {
+                _logger.LogError(e, e.Message);
                 ModelState.AddModelError("", "Something went wrong while regist");
                 return StatusCode(500, new { message = e.Message });
             }
@@ -215,14 +232,17 @@ namespace LibraryApp.Controllers
             }
             catch (BadRequestException e)
             {
+                _logger.LogError(e, e.Message);
                 return BadRequest();
             }
             catch (NotFoundException e)
             {
+                _logger.LogError(e, e.Message);
                 return NotFound(new { message = e.Message });
             }
             catch (Exception e)
             {
+                _logger.LogError(e, e.Message);
                 ModelState.AddModelError("", "Something went wrong while regist");
                 return StatusCode(500, new { message = e.Message });
             }
@@ -242,10 +262,12 @@ namespace LibraryApp.Controllers
             }
             catch (NotFoundException e)
             {
+                _logger.LogError(e, e.Message);
                 return NotFound(new { message = e.Message });
             }
             catch (Exception e)
             {
+                _logger.LogError(e, e.Message);
                 ModelState.AddModelError("", "Something went wrong while regist");
                 return StatusCode(500, new { message = e.Message });
             }

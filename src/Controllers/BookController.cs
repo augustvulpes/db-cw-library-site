@@ -12,10 +12,12 @@ namespace LibraryApp.Controllers
     public class BookController : Controller
     {
         private readonly IBookService _bookService;
+        private readonly ILogger<BookController> _logger;
 
-        public BookController(IBookService bookService)
+        public BookController(IBookService bookService, ILogger<BookController> logger)
         {
             _bookService = bookService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -46,6 +48,7 @@ namespace LibraryApp.Controllers
             }
             catch (NotFoundException e)
             {
+                _logger.LogError(e, e.Message);
                 return NotFound(new { message = e.Message });
             }
         }
@@ -63,18 +66,22 @@ namespace LibraryApp.Controllers
             }
             catch (BadRequestException e)
             {
+                _logger.LogError(e, e.Message);
                 return BadRequest();
             }
             catch (UnprocessableException e)
             {
+                _logger.LogError(e, e.Message);
                 return StatusCode(422, new { message = e.Message });
             }
             catch (NotFoundException e)
             {
+                _logger.LogError(e, e.Message);
                 return NotFound(new { message = e.Message });
             }
-            catch (Exception _)
+            catch (Exception e)
             {
+                _logger.LogError(e, e.Message);
                 ModelState.AddModelError("", "Something went wrong while updating");
                 return StatusCode(500, ModelState);
             }
@@ -93,18 +100,22 @@ namespace LibraryApp.Controllers
             }
             catch (BadRequestException e)
             {
+                _logger.LogError(e, e.Message);
                 return BadRequest();
             }
             catch (UnprocessableException e)
             {
+                _logger.LogError(e, e.Message);
                 return StatusCode(422, new { message = e.Message });
             }
             catch (NotFoundException e)
             {
+                _logger.LogError(e, e.Message);
                 return NotFound(new { message = e.Message });
             }
-            catch (Exception _)
+            catch (Exception e)
             {
+                _logger.LogError(e, e.Message);
                 ModelState.AddModelError("", "Something went wrong while updating");
                 return StatusCode(500, ModelState);
             }
@@ -123,18 +134,22 @@ namespace LibraryApp.Controllers
             }
             catch (BadRequestException e)
             {
+                _logger.LogError(e, e.Message);
                 return BadRequest();
             }
             catch (UnprocessableException e)
             {
+                _logger.LogError(e, e.Message);
                 return StatusCode(422, new { message = e.Message });
             }
             catch (NotFoundException e)
             {
+                _logger.LogError(e, e.Message);
                 return NotFound(new { message = e.Message });
             }
-            catch (Exception _)
+            catch (Exception e)
             {
+                _logger.LogError(e, e.Message);
                 ModelState.AddModelError("", "Something went wrong while updating");
                 return StatusCode(500, ModelState);
             }
@@ -154,14 +169,17 @@ namespace LibraryApp.Controllers
             }
             catch (BadRequestException e)
             {
+                _logger.LogError(e, e.Message);
                 return BadRequest();
             }
             catch (NotFoundException e)
             {
+                _logger.LogError(e, e.Message);
                 return NotFound(new { message = e.Message });
             }
-            catch (Exception _)
+            catch (Exception e)
             {
+                _logger.LogError(e, e.Message);
                 ModelState.AddModelError("", "Something went wrong while updating");
                 return StatusCode(500, ModelState);
             }
@@ -181,10 +199,12 @@ namespace LibraryApp.Controllers
             }
             catch (NotFoundException e)
             {
+                _logger.LogError(e, e.Message);
                 return NotFound(new { message = e.Message });
             }
-            catch (Exception _)
+            catch (Exception e)
             {
+                _logger.LogError(e, e.Message);
                 ModelState.AddModelError("", "Something went wrong while deleting");
                 return StatusCode(500, ModelState);
             }
